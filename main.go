@@ -9,12 +9,17 @@ package prompter
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
 )
 
 var cliPrompt = "> "
+
+// Input is where the answers should be read from. By default, this is os.Stdin, but
+// can be changed to anything else, if necessary.
+var Input io.Reader = os.Stdin
 
 // SetPrompt sets the command line prompt character. Also adds a space at the end.
 // The default is "> "
@@ -110,7 +115,7 @@ func AskSelectionDef(question string, defAns int, options []string) (string, boo
 }
 
 func prompt() string {
-	reader := bufio.NewReader(os.Stdin)
+	reader := bufio.NewReader(Input)
 	fmt.Print(cliPrompt)
 	ans, _ := reader.ReadString('\n')
 	return strings.TrimSuffix(ans, "\n")
