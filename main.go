@@ -15,11 +15,17 @@ import (
 	"strings"
 )
 
-var cliPrompt = "> "
+var (
+	// Out is where the questions are printed to. By default, this is os.Stdout, but
+	// can be changed to anything else, if necessary.
+	Out io.Writer = os.Stdout
 
-// Input is where the answers should be read from. By default, this is os.Stdin, but
-// can be changed to anything else, if necessary.
-var Input io.Reader = os.Stdin
+	// In is where the answers should be read from. By default, this is os.Stdin, but
+	// can be changed to anything else, if necessary.
+	In io.Reader = os.Stdin
+
+	cliPrompt = "> "
+)
 
 // SetPrompt sets the command line prompt character. Also adds a space at the end.
 // The default is "> "
@@ -31,18 +37,18 @@ func SetPrompt(prompt string) {
 // There is no default answer, so if no answer is provided, then an empty string
 // will be returned.
 func Ask(question string) string {
-	fmt.Println(question)
+	fmt.Fprintln(Out, question)
 
 	return prompt()
 }
 
-// AskDef prompts the user for input.he value of `question` will be shown to the
+// AskDef prompts the user for input. The value of `question` will be shown to the
 // user, while `defAns` is what will be saved if no answer is provided.
 func AskDef(question, defAns string) string {
-	fmt.Printf("%s (%s):\n", question, defAns)
+	fmt.Fprintf(Out, "%s (%s):\n", question, defAns)
 	ans := prompt()
 
-	if ans == "\n" {
+	if ans == "" {
 		ans = defAns
 	}
 
@@ -55,7 +61,7 @@ func AskDef(question, defAns string) string {
 // Currently, this does not happen, however a warning message is shown after the
 // question.
 func AskSecret(question string) string {
-	fmt.Printf("%s - %s\n", question, "WARNING: What you type will be shown!")
+	fmt.Fprintf(Out, "%s - %s\n", question, "WARNING: What you type will be shown!")
 
 	return prompt()
 }
@@ -66,14 +72,14 @@ func AskSecret(question string) string {
 // and false if a non-number was specified or if number was out of range
 // of the selections.
 func AskSelection(question string, options []string) (string, bool) {
-	fmt.Println(question)
+	fmt.Fprintln(Out, question)
 	for i, v := range options {
-		fmt.Printf("  [%d] %s\n", i, v)
+		fmt.Fprintf(Out, "  [%d] %s\n", i, v)
 	}
 
 	intAns, err := strconv.Atoi(prompt())
 	if err != nil || intAns < 0 || intAns > len(options)-1 {
-		fmt.Printf("Invalid input. Can only be between 0-%d\n", len(options)-1)
+		fmt.Fprintf(Out, "Invalid input. Can only be between 0-%d\n", len(options)-1)
 		return "", false
 	}
 
@@ -90,13 +96,13 @@ func AskSelection(question string, options []string) (string, bool) {
 // specified.
 func AskSelectionDef(question string, defAns int, options []string) (string, bool) {
 	if defAns < 0 || defAns > len(options)-1 {
-		fmt.Print("Default answer was out of bounds of number of options.")
+		fmt.Fprint(Out, "Default answer was out of bounds of number of options.")
 		return "", false
 	}
 
-	fmt.Printf("%s (default: %d)\n", question, defAns)
+	fmt.Fprintf(Out, "%s (default: %d)\n", question, defAns)
 	for i, v := range options {
-		fmt.Printf("  [%d] %s\n", i, v)
+		fmt.Fprintf(Out, "  [%d] %s\n", i, v)
 	}
 
 	ans := prompt()
@@ -107,7 +113,7 @@ func AskSelectionDef(question string, defAns int, options []string) (string, boo
 
 	intAns, err := strconv.Atoi(ans)
 	if err != nil || intAns < 0 || intAns > len(options)-1 {
-		fmt.Printf("Invalid input. Can only be between 0-%d\n", len(options)-1)
+		fmt.Fprintf(Out, "Invalid input. Can only be between 0-%d\n", len(options)-1)
 		return "", false
 	}
 
@@ -115,8 +121,8 @@ func AskSelectionDef(question string, defAns int, options []string) (string, boo
 }
 
 func prompt() string {
-	reader := bufio.NewReader(Input)
-	fmt.Print(cliPrompt)
+	reader := bufio.NewReader(In)
+	fmt.Fprint(Out, cliPrompt)
 	ans, _ := reader.ReadString('\n')
 	return strings.TrimSuffix(ans, "\n")
 }
