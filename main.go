@@ -1,6 +1,9 @@
 // Package prompter is a small library which helps in setting up prompts
 // to be answered by a user running an application on the command line.
 // The answers provided by the user will be returned as strings.
+//
+// Question marks are not added for the questions, that should be done
+// by the caller.
 package prompter
 
 import (
@@ -11,8 +14,16 @@ import (
 	"strings"
 )
 
+var cliPrompt = "> "
+
+// SetPrompt sets the command line prompt character. Also adds a space at the end.
+// The default is "> "
+func SetPrompt(prompt string) {
+	cliPrompt = fmt.Sprintf("%s ", prompt)
+}
+
 // Ask prompts the user for input. The value of `question` will be shown to the user.
-// there is no default answer, so if no answer is provided, then an empty string
+// There is no default answer, so if no answer is provided, then an empty string
 // will be returned.
 func Ask(question string) string {
 	fmt.Println(question)
@@ -20,10 +31,8 @@ func Ask(question string) string {
 	return prompt()
 }
 
-// AskDef prompts the user for input. The message shown to the user will be
-// the `question`, while `defAns` is what will be saved if no answer is provided.
-// No question mark is added to the end of the question, that should be done by
-// the caller.
+// AskDef prompts the user for input.he value of `question` will be shown to the
+// user, while `defAns` is what will be saved if no answer is provided.
 func AskDef(question, defAns string) string {
 	fmt.Printf("%s (%s):\n", question, defAns)
 	ans := prompt()
@@ -47,7 +56,7 @@ func AskSecret(question string) string {
 }
 
 // AskSelection takes a slice of strings to display as a selection box in
-// the form of [index] question, from which the user can choose easily.
+// the form of `[index] question`, from which the user can choose easily.
 // Returns the chosen index and a true if correctly chosen, or empty string
 // and false if a non-number was specified or if number was out of range
 // of the selections.
@@ -67,7 +76,7 @@ func AskSelection(question string, options []string) (string, bool) {
 }
 
 // AskSelectionDef takes a slice of strings to display as a selection box in
-// the form of [index] question, from which the user can choose easily.
+// the form of `[index] question`, from which the user can choose easily.
 // Returns the chosen index and a true if correctly chosen, or empty string
 // and false if a non-number was specified or if number was out of range
 // of the selections.
@@ -102,7 +111,7 @@ func AskSelectionDef(question string, defAns int, options []string) (string, boo
 
 func prompt() string {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("> ")
+	fmt.Print(cliPrompt)
 	ans, _ := reader.ReadString('\n')
 	return strings.TrimSuffix(ans, "\n")
 }
