@@ -1,6 +1,6 @@
 // Package prompter is a small library which helps in setting up prompts
 // to be answered by a user running an application on the command line.
-// The answers provided by the user will be returned in a _ format.
+// The answers provided by the user will be returned as strings.
 package prompter
 
 import (
