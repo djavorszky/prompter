@@ -3,22 +3,106 @@
 // The answers provided by the user will be returned in a _ format.
 package prompter
 
-var questions = make([]simpleQ, 0)
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+)
 
-// Prompt starts the prompting process, starting the series of questions
-// with the first one it received via the Ask methods
-func Prompt() {
+// Ask prompts the user for input. The value of `question` will be shown to the user.
+// there is no default answer, so if no answer is provided, then an empty string
+// will be returned.
+func Ask(question string) string {
+	fmt.Println(question)
 
+	return prompt()
 }
 
-// Ask stores a question that will be prompted for the user once the Prompt
-// method is called. `Question` is the message that will be shown to the user
-// while `defAns` is what will be saved if no answer is specified - that is,
-// if the user presses enter without typing anything
-func Ask(question, defAns string) {
-	questions = append(questions, simpleQ{question, defAns})
+// AskDef prompts the user for input. The message shown to the user will be
+// the `question`, while `defAns` is what will be saved if no answer is provided.
+// No question mark is added to the end of the question, that should be done by
+// the caller.
+func AskDef(question, defAns string) string {
+	fmt.Printf("%s (%s):\n", question, defAns)
+	ans := prompt()
+
+	if ans == "\n" {
+		ans = defAns
+	}
+
+	return ans
 }
 
-type simpleQ struct {
-	question, defAns string
+// AskSecret prompts the user for an input that should not show on the terminal
+// either by replacing the characters with asterisks, or not showing anything at all.
+//
+// Currently, this does not happen, however a warning message is shown after the
+// question.
+func AskSecret(question string) string {
+	fmt.Printf("%s - %s\n", question, "WARNING: What you type will be shown!")
+
+	return prompt()
+}
+
+// AskSelection takes a slice of strings to display as a selection box in
+// the form of [index] question, from which the user can choose easily.
+// Returns the chosen index and a true if correctly chosen, or empty string
+// and false if a non-number was specified or if number was out of range
+// of the selections.
+func AskSelection(question string, options []string) (string, bool) {
+	fmt.Println(question)
+	for i, v := range options {
+		fmt.Printf("  [%d] %s\n", i, v)
+	}
+
+	intAns, err := strconv.Atoi(prompt())
+	if err != nil || intAns < 0 || intAns > len(options)-1 {
+		fmt.Printf("Invalid input. Can only be between 0-%d\n", len(options)-1)
+		return "", false
+	}
+
+	return strconv.Itoa(intAns), true
+}
+
+// AskSelectionDef takes a slice of strings to display as a selection box in
+// the form of [index] question, from which the user can choose easily.
+// Returns the chosen index and a true if correctly chosen, or empty string
+// and false if a non-number was specified or if number was out of range
+// of the selections.
+//
+// Also shows a default selection which will be chosen if no input is
+// specified.
+func AskSelectionDef(question string, defAns int, options []string) (string, bool) {
+	if defAns < 0 || defAns > len(options)-1 {
+		fmt.Print("Default answer was out of bounds of number of options.")
+		return "", false
+	}
+
+	fmt.Printf("%s (default: %d)\n", question, defAns)
+	for i, v := range options {
+		fmt.Printf("  [%d] %s\n", i, v)
+	}
+
+	ans := prompt()
+
+	if ans == "" {
+		return strconv.Itoa(defAns), true
+	}
+
+	intAns, err := strconv.Atoi(ans)
+	if err != nil || intAns < 0 || intAns > len(options)-1 {
+		fmt.Printf("Invalid input. Can only be between 0-%d\n", len(options)-1)
+		return "", false
+	}
+
+	return strconv.Itoa(intAns), true
+}
+
+func prompt() string {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("> ")
+	ans, _ := reader.ReadString('\n')
+	return strings.TrimSuffix(ans, "\n")
 }
