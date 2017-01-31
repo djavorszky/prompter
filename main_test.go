@@ -123,7 +123,7 @@ func TestSelectionValidInput(t *testing.T) {
 		t.Error(msg)
 	}
 
-	if msg, ok := expect(numberInput, ans); !ok {
+	if msg, ok := expect(numberInput, strconv.Itoa(ans)); !ok {
 		t.Error(msg)
 	}
 }
@@ -152,7 +152,7 @@ func TestSelectionInValidInput(t *testing.T) {
 		t.Error(msg)
 	}
 
-	if msg, ok := expect("", ans); !ok {
+	if msg, ok := expect("0", strconv.Itoa(ans)); !ok {
 		t.Error(msg)
 	}
 }
@@ -180,7 +180,7 @@ func TestSelectionDefValidInput(t *testing.T) {
 		t.Error(msg)
 	}
 
-	if msg, ok := expect(numberInput, ans); !ok {
+	if msg, ok := expect(numberInput, strconv.Itoa(ans)); !ok {
 		t.Error(msg)
 	}
 }
@@ -209,7 +209,7 @@ func TestSelectionDefInValidInput(t *testing.T) {
 		t.Error(msg)
 	}
 
-	if msg, ok := expect("", ans); !ok {
+	if msg, ok := expect("0", strconv.Itoa(ans)); !ok {
 		t.Error(msg)
 	}
 }
@@ -237,7 +237,7 @@ func TestSelectionDefNoInput(t *testing.T) {
 		t.Error(msg)
 	}
 
-	if msg, ok := expect(strconv.Itoa(defAns), ans); !ok {
+	if msg, ok := expect(strconv.Itoa(defAns), strconv.Itoa(ans)); !ok {
 		t.Error(msg)
 	}
 }

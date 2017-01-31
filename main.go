@@ -71,7 +71,7 @@ func AskSecret(question string) string {
 // Returns the chosen index and a true if correctly chosen, or empty string
 // and false if a non-number was specified or if number was out of range
 // of the selections.
-func AskSelection(question string, options []string) (string, bool) {
+func AskSelection(question string, options []string) (int, bool) {
 	fmt.Fprintln(Out, question)
 	for i, v := range options {
 		fmt.Fprintf(Out, "  [%d] %s\n", i, v)
@@ -80,10 +80,10 @@ func AskSelection(question string, options []string) (string, bool) {
 	intAns, err := strconv.Atoi(prompt())
 	if err != nil || intAns < 0 || intAns > len(options)-1 {
 		fmt.Fprintf(Out, "Invalid input. Can only be between 0-%d\n", len(options)-1)
-		return "", false
+		return 0, false
 	}
 
-	return strconv.Itoa(intAns), true
+	return intAns, true
 }
 
 // AskSelectionDef takes a slice of strings to display as a selection box in
@@ -94,10 +94,10 @@ func AskSelection(question string, options []string) (string, bool) {
 //
 // Also shows a default selection which will be chosen if no input is
 // specified.
-func AskSelectionDef(question string, defAns int, options []string) (string, bool) {
+func AskSelectionDef(question string, defAns int, options []string) (int, bool) {
 	if defAns < 0 || defAns > len(options)-1 {
 		fmt.Fprint(Out, "Default answer was out of bounds of number of options.")
-		return "", false
+		return 0, false
 	}
 
 	fmt.Fprintf(Out, "%s (default: %d)\n", question, defAns)
@@ -108,16 +108,16 @@ func AskSelectionDef(question string, defAns int, options []string) (string, boo
 	ans := prompt()
 
 	if ans == "" {
-		return strconv.Itoa(defAns), true
+		return defAns, true
 	}
 
 	intAns, err := strconv.Atoi(ans)
 	if err != nil || intAns < 0 || intAns > len(options)-1 {
 		fmt.Fprintf(Out, "Invalid input. Can only be between 0-%d\n", len(options)-1)
-		return "", false
+		return 0, false
 	}
 
-	return strconv.Itoa(intAns), true
+	return intAns, true
 }
 
 func prompt() string {
