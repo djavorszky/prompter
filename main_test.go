@@ -1,7 +1,8 @@
 package prompter
 
 import (
-	"io/ioutil"
+	"bytes"
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -12,37 +13,68 @@ const (
 	defAns  = "Something"
 )
 
+var buf bytes.Buffer
+
 func setup(in string) {
 	In = strings.NewReader(in)
-	Out = ioutil.Discard
+
+	buf.Reset()
+	Out = &buf
 }
 
 func TestAsk(t *testing.T) {
 	setup(input)
 
-	ans := Ask("TestOne")
+	const q = "TestOne"
+	expectedOut := fmt.Sprintf("%s\n> ", q)
 
-	if ans != "Nothing" {
-		t.Errorf("Mismatch; Expected: %q, got %q", input, ans)
+	ans := Ask(q)
+
+	if msg, ok := expect(expectedOut, buf.String()); !ok {
+		t.Errorf(msg)
+	}
+
+	if msg, ok := expect(strings.TrimSuffix(input, "\n"), ans); !ok {
+		t.Errorf(msg)
 	}
 }
 
 func TestAskDef(t *testing.T) {
-	var ans string
-
 	setup(input)
 
-	ans = AskDef("TestTwo", defAns)
+	const q = "TestTwo"
+	expectedOut := fmt.Sprintf("%s (%s):\n> ", q, defAns)
 
-	if ans != "Nothing" {
-		t.Errorf("Mismatch; Expected: %q, got %q", input, ans)
+	ans := AskDef(q, defAns)
+
+	if msg, ok := expect(expectedOut, buf.String()); !ok {
+		t.Errorf(msg)
+	}
+
+	if msg, ok := expect(strings.TrimSuffix(input, "\n"), ans); !ok {
+		t.Errorf(msg)
 	}
 
 	setup(noInput)
 
-	ans = AskDef("TestThree", defAns)
+	const q2 = "TestThree"
+	expectedOut = fmt.Sprintf("%s (%s):\n> ", q2, defAns)
 
-	if ans != defAns {
-		t.Errorf("Mismatch; Expected: %q, got %q", defAns, ans)
+	ans = AskDef(q2, defAns)
+
+	if msg, ok := expect(expectedOut, buf.String()); !ok {
+		t.Errorf(msg)
 	}
+
+	if msg, ok := expect(defAns, ans); !ok {
+		t.Errorf(msg)
+	}
+}
+
+func expect(expected, actual string) (string, bool) {
+	if actual != expected {
+		return fmt.Sprintf("Mismatch: Expected %q, got %q", expected, actual), false
+	}
+
+	return "", true
 }
