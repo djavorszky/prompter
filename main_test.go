@@ -16,6 +16,8 @@ const (
 var buf bytes.Buffer
 
 func setup(in string) {
+	SetPrompt(">")
+
 	In = strings.NewReader(in)
 
 	buf.Reset()
@@ -54,19 +56,36 @@ func TestAskDef(t *testing.T) {
 	if msg, ok := expect(strings.TrimSuffix(input, "\n"), ans); !ok {
 		t.Errorf(msg)
 	}
+}
 
+func TestAskDefNoInput(t *testing.T) {
 	setup(noInput)
 
-	const q2 = "TestThree"
-	expectedOut = fmt.Sprintf("%s (%s):\n> ", q2, defAns)
+	const q = "TestThree"
+	expectedOut := fmt.Sprintf("%s (%s):\n> ", q, defAns)
 
-	ans = AskDef(q2, defAns)
+	ans := AskDef(q, defAns)
 
 	if msg, ok := expect(expectedOut, buf.String()); !ok {
 		t.Errorf(msg)
 	}
 
 	if msg, ok := expect(defAns, ans); !ok {
+		t.Errorf(msg)
+	}
+}
+
+func TestSetPrompt(t *testing.T) {
+	setup(input)
+
+	const q, p = "TestFour", "?"
+	expectedOut := fmt.Sprintf("%s\n%s ", q, p)
+
+	SetPrompt(p)
+
+	_ = Ask(q)
+
+	if msg, ok := expect(expectedOut, buf.String()); !ok {
 		t.Errorf(msg)
 	}
 }
