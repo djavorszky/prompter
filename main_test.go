@@ -33,11 +33,11 @@ func TestAsk(t *testing.T) {
 	ans := Ask(q)
 
 	if msg, ok := expect(expectedOut, buf.String()); !ok {
-		t.Errorf(msg)
+		t.Error(msg)
 	}
 
 	if msg, ok := expect(strings.TrimSuffix(input, "\n"), ans); !ok {
-		t.Errorf(msg)
+		t.Error(msg)
 	}
 }
 
@@ -50,11 +50,11 @@ func TestAskDef(t *testing.T) {
 	ans := AskDef(q, defAns)
 
 	if msg, ok := expect(expectedOut, buf.String()); !ok {
-		t.Errorf(msg)
+		t.Error(msg)
 	}
 
 	if msg, ok := expect(strings.TrimSuffix(input, "\n"), ans); !ok {
-		t.Errorf(msg)
+		t.Error(msg)
 	}
 }
 
@@ -67,11 +67,11 @@ func TestAskDefNoInput(t *testing.T) {
 	ans := AskDef(q, defAns)
 
 	if msg, ok := expect(expectedOut, buf.String()); !ok {
-		t.Errorf(msg)
+		t.Error(msg)
 	}
 
 	if msg, ok := expect(defAns, ans); !ok {
-		t.Errorf(msg)
+		t.Error(msg)
 	}
 }
 
@@ -86,7 +86,7 @@ func TestSetPrompt(t *testing.T) {
 	_ = Ask(q)
 
 	if msg, ok := expect(expectedOut, buf.String()); !ok {
-		t.Errorf(msg)
+		t.Error(msg)
 	}
 }
 
