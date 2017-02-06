@@ -6,13 +6,21 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/djavorszky/sutils"
 )
 
 const (
-	input       = "Nothing\n"
-	noInput     = "\n"
-	numberInput = "1"
-	defAns      = "Something"
+	input        = "Nothing\n"
+	inputWindows = "Nothing\r\n"
+
+	noInput        = "\n"
+	noInputWindows = "\r\n"
+
+	numInput        = "1\n"
+	numInputWindows = "1\r\n"
+
+	defAns = "Something"
 )
 
 var buf bytes.Buffer
@@ -27,53 +35,61 @@ func setup(in string) {
 }
 
 func TestAsk(t *testing.T) {
-	setup(input)
+	for i, ins := range []string{input, inputWindows} {
+		setup(ins)
 
-	const q = "TestOne"
-	expectedOut := fmt.Sprintf("%s\n> ", q)
+		q := "TestOne_" + strconv.Itoa(i)
+		expectedOut := fmt.Sprintf("%s\n> ", q)
 
-	ans := Ask(q)
+		ans := Ask(q)
 
-	if msg, ok := expect(expectedOut, buf.String()); !ok {
-		t.Error(msg)
+		if msg, ok := expect(expectedOut, buf.String()); !ok {
+			t.Error(msg)
+		}
+
+		if msg, ok := expect(sutils.TrimNL(ins), ans); !ok {
+			t.Error(msg)
+		}
 	}
 
-	if msg, ok := expect(strings.TrimSuffix(input, "\n"), ans); !ok {
-		t.Error(msg)
-	}
 }
 
 func TestAskDef(t *testing.T) {
-	setup(input)
+	for i, ins := range []string{input, inputWindows} {
+		setup(ins)
 
-	const q = "TestTwo"
-	expectedOut := fmt.Sprintf("%s (%s):\n> ", q, defAns)
+		q := "TestTwo_" + strconv.Itoa(i)
+		expectedOut := fmt.Sprintf("%s (%s):\n> ", q, defAns)
 
-	ans := AskDef(q, defAns)
+		ans := AskDef(q, defAns)
 
-	if msg, ok := expect(expectedOut, buf.String()); !ok {
-		t.Error(msg)
-	}
+		if msg, ok := expect(expectedOut, buf.String()); !ok {
+			t.Error(msg)
+		}
 
-	if msg, ok := expect(strings.TrimSuffix(input, "\n"), ans); !ok {
-		t.Error(msg)
+		if msg, ok := expect(sutils.TrimNL(ins), ans); !ok {
+			t.Error(msg)
+		}
 	}
 }
 
 func TestAskDefNoInput(t *testing.T) {
-	setup(noInput)
+	for i, ins := range []string{noInput, noInputWindows} {
 
-	const q = "TestThree"
-	expectedOut := fmt.Sprintf("%s (%s):\n> ", q, defAns)
+		setup(ins)
 
-	ans := AskDef(q, defAns)
+		q := "TestThree_" + strconv.Itoa(i)
+		expectedOut := fmt.Sprintf("%s (%s):\n> ", q, defAns)
 
-	if msg, ok := expect(expectedOut, buf.String()); !ok {
-		t.Error(msg)
-	}
+		ans := AskDef(q, defAns)
 
-	if msg, ok := expect(defAns, ans); !ok {
-		t.Error(msg)
+		if msg, ok := expect(expectedOut, buf.String()); !ok {
+			t.Error(msg)
+		}
+
+		if msg, ok := expect(defAns, ans); !ok {
+			t.Error(msg)
+		}
 	}
 }
 
@@ -92,46 +108,41 @@ func TestSetPrompt(t *testing.T) {
 	}
 }
 
-func expect(expected, actual string) (string, bool) {
-	if actual != expected {
-		return fmt.Sprintf("Mismatch: Expected %q, got %q", expected, actual), false
-	}
-
-	return "", true
-}
-
 func TestSelectionValidInput(t *testing.T) {
-	setup(numberInput)
+	for i, ins := range []string{numInput, numInputWindows} {
+		setup(ins)
 
-	const q = "TestFive"
-	options := []string{"one", "two"}
+		q := "TestFive_" + strconv.Itoa(i)
+		options := []string{"one", "two"}
 
-	var expectedOut bytes.Buffer
+		var expectedOut bytes.Buffer
 
-	expectedOut.WriteString(fmt.Sprintf("%s\n", q))
-	for i, o := range options {
-		expectedOut.WriteString(fmt.Sprintf("  [%d] %s\n", i, o))
-	}
-	expectedOut.WriteString("> ")
+		expectedOut.WriteString(fmt.Sprintf("%s\n", q))
+		for i, o := range options {
+			expectedOut.WriteString(fmt.Sprintf("  [%d] %s\n", i, o))
+		}
+		expectedOut.WriteString("> ")
 
-	ans, ok := AskSelection(q, options)
-	if !ok {
-		t.Error("AskSelection failed due to invalid input where valid input was provided.")
-	}
+		ans, ok := AskSelection(q, options)
+		if !ok {
+			t.Error("AskSelection failed due to invalid input where valid input was provided.")
+		}
 
-	if msg, ok := expect(expectedOut.String(), buf.String()); !ok {
-		t.Error(msg)
-	}
+		if msg, ok := expect(expectedOut.String(), buf.String()); !ok {
+			t.Error(msg)
+		}
 
-	if msg, ok := expect(numberInput, strconv.Itoa(ans)); !ok {
-		t.Error(msg)
+		if msg, ok := expect(sutils.TrimNL(ins), strconv.Itoa(ans)); !ok {
+			t.Error(msg)
+		}
 	}
 }
 
 func TestSelectionInValidInput(t *testing.T) {
 	setup(input)
 
-	const q = "TestSix"
+	q := "TestSix_Invalid"
+
 	options := []string{"one", "two"}
 
 	var expectedOut bytes.Buffer
@@ -158,37 +169,43 @@ func TestSelectionInValidInput(t *testing.T) {
 }
 
 func TestSelectionDefValidInput(t *testing.T) {
-	setup(numberInput)
+	for i, ins := range []string{numInput, numInputWindows} {
+		setup(ins)
 
-	const q, defAns = "TestSeven", 1
-	options := []string{"one", "two"}
+		q := "TestSeven_" + strconv.Itoa(i)
 
-	var expectedOut bytes.Buffer
+		const defAns = 1
+		options := []string{"one", "two"}
 
-	expectedOut.WriteString(fmt.Sprintf("%s (default: %d)\n", q, defAns))
-	for i, o := range options {
-		expectedOut.WriteString(fmt.Sprintf("  [%d] %s\n", i, o))
-	}
-	expectedOut.WriteString("> ")
+		var expectedOut bytes.Buffer
 
-	ans, ok := AskSelectionDef(q, defAns, options)
-	if !ok {
-		t.Error("AskSelectionDef failed due to invalid input where valid input was provided.")
-	}
+		expectedOut.WriteString(fmt.Sprintf("%s (default: %d)\n", q, defAns))
+		for i, o := range options {
+			expectedOut.WriteString(fmt.Sprintf("  [%d] %s\n", i, o))
+		}
+		expectedOut.WriteString("> ")
 
-	if msg, ok := expect(expectedOut.String(), buf.String()); !ok {
-		t.Error(msg)
-	}
+		ans, ok := AskSelectionDef(q, defAns, options)
+		if !ok {
+			t.Error("AskSelectionDef failed due to invalid input where valid input was provided.")
+		}
 
-	if msg, ok := expect(numberInput, strconv.Itoa(ans)); !ok {
-		t.Error(msg)
+		if msg, ok := expect(expectedOut.String(), buf.String()); !ok {
+			t.Error(msg)
+		}
+
+		if msg, ok := expect(sutils.TrimNL(ins), strconv.Itoa(ans)); !ok {
+			t.Error(msg)
+		}
 	}
 }
 
 func TestSelectionDefInValidInput(t *testing.T) {
 	setup(input)
 
-	const q, defAns = "TestEight", 1
+	q := "TestSeven_Invalid"
+
+	const defAns = 1
 	options := []string{"one", "two"}
 
 	var expectedOut bytes.Buffer
@@ -240,4 +257,12 @@ func TestSelectionDefNoInput(t *testing.T) {
 	if msg, ok := expect(strconv.Itoa(defAns), strconv.Itoa(ans)); !ok {
 		t.Error(msg)
 	}
+}
+
+func expect(expected, actual string) (string, bool) {
+	if actual != expected {
+		return fmt.Sprintf("Mismatch: Expected %q, got %q", expected, actual), false
+	}
+
+	return "", true
 }

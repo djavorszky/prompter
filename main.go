@@ -12,7 +12,8 @@ import (
 	"io"
 	"os"
 	"strconv"
-	"strings"
+
+	"github.com/djavorszky/sutils"
 )
 
 var (
@@ -124,5 +125,6 @@ func prompt() string {
 	reader := bufio.NewReader(In)
 	fmt.Fprint(Out, cliPrompt)
 	ans, _ := reader.ReadString('\n')
-	return strings.TrimSuffix(ans, "\n")
+
+	return sutils.TrimNL(ans)
 }
