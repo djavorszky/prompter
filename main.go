@@ -12,6 +12,7 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/djavorszky/sutils"
 )
@@ -119,6 +120,30 @@ func AskSelectionDef(question string, defAns int, options []string) (int, bool) 
 	}
 
 	return intAns, true
+}
+
+// AskBoolDef prompts the user to a question to which a yes/no
+// answer is requested. If no or invalid answer is given, the defAns
+// is returned.
+func AskBoolDef(question string, def bool) bool {
+	defAns := "n"
+
+	if def {
+		defAns = "y"
+	}
+
+	fmt.Fprintf(Out, "%s (y/n) (%s):\n", question, defAns)
+	ans := prompt()
+
+	if ans == "" {
+		return def
+	}
+
+	if strings.ToLower(ans) != "y" {
+		return false
+	}
+
+	return true
 }
 
 func prompt() string {

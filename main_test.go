@@ -20,7 +20,11 @@ const (
 	numInput        = "1\n"
 	numInputWindows = "1\r\n"
 
-	defAns = "Something"
+	boolInput        = "y\n"
+	boolInputWindows = "y\r\n"
+
+	defAns     = "Something"
+	boolDefAns = "n"
 )
 
 var buf bytes.Buffer
@@ -259,7 +263,49 @@ func TestSelectionDefNoInput(t *testing.T) {
 	}
 }
 
-func expect(expected, actual string) (string, bool) {
+func TestAskBoolDef(t *testing.T) {
+	for i, ins := range []string{boolInput, boolInputWindows} {
+		setup(ins)
+
+		expectedAns := true
+
+		q := "TestTen_" + strconv.Itoa(i)
+		expectedOut := fmt.Sprintf("%s (y/n) (%v):\n> ", q, boolDefAns)
+
+		ans := AskBoolDef(q, false)
+
+		if msg, ok := expect(expectedOut, buf.String()); !ok {
+			t.Error(msg)
+		}
+
+		if msg, ok := expect(expectedAns, ans); !ok {
+			t.Error(msg)
+		}
+	}
+}
+
+func TestAskBoolDefNoInput(t *testing.T) {
+	for i, ins := range []string{noInput, noInputWindows} {
+		setup(ins)
+
+		expectedAns := false
+
+		q := "TestEleven_" + strconv.Itoa(i)
+		expectedOut := fmt.Sprintf("%s (y/n) (%v):\n> ", q, boolDefAns)
+
+		ans := AskBoolDef(q, false)
+
+		if msg, ok := expect(expectedOut, buf.String()); !ok {
+			t.Error(msg)
+		}
+
+		if msg, ok := expect(expectedAns, ans); !ok {
+			t.Error(msg)
+		}
+	}
+}
+
+func expect(expected, actual interface{}) (string, bool) {
 	if actual != expected {
 		return fmt.Sprintf("Mismatch: Expected %q, got %q", expected, actual), false
 	}
